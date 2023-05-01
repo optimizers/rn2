@@ -12,6 +12,16 @@
 % \renewcommand{\year}{2022}     % If you don't want the current year.
 \newcommand{\cahiernumber}{00}  % Insert your Cahier du GERAD number.
 %
+% Meta-information for the PDF file generated..
+%
+\newcommand{\papertitle}{A Proximal Modified Quasi-Newton Method for Nonsmooth Regularized Optimization}
+\hypersetup{
+  pdftitle={\papertitle},
+  pdfauthor={Youssef Diouane and Mohamed Laghdaf and Dominique Orban},
+  pdfsubject={Nonsmooth Regularized Optimization},
+  pdfkeywords={},
+}
+%
 % \usepackage{mathptmx}      % use Times fonts if available on your TeX system
 %
 % insert here the call for the packages your document requires
@@ -20,39 +30,53 @@
 %
 % please place your own definitions here and don't use \def but
 % \newcommand{}{}
+\spdefaulttheorem{problemassumption}{Problem Assumption}{\bf}{\it}
+\spdefaulttheorem{modelassumption}{Model Assumption}{\bf}{\it}
+\spdefaulttheorem{stepassumption}{Step Assumption}{\bf}{\it}
+\crefname{problemassumption}{Problem Assumption}{Problem Assumptions}
+\Crefname{problemassumption}{Problem Assumption}{Problem Assumptions}
+\crefname{modelassumption}{Model Assumption}{Model Assumptions}
+\Crefname{modelassumption}{Model Assumption}{Model Assumptions}
+\crefname{stepassumption}{Step Assumption}{Step Assumptions}
+\Crefname{stepassumption}{Step Assumption}{Step Assumptions}
+% No need to use "sub" in front of a subsection reference.
+\Crefname{subsection}{Section}{Sections}
+\crefname{subsection}{section}{sections}
 %
 % Insert the name of "your journal" with
-\journalname{Mathematical Programming Computation}
+\journalname{JOTA}
 %
 \begin{document}
 
 \title{%
-  Insert your title here%
-  \thanks{%
-    Grants or other notes about the article that should go on the front page should be placed here. General acknowledgments should be placed at the end of the article.
-  }
+  \papertitle
+  \thanks{Research supported by an NSERC Discovery grant.}%
 }
-\subtitle{%
-  Do you have a subtitle?\\ If so, write it here
+% \subtitle{%
+%   Do you have a subtitle?\\ If so, write it here
+% }
+
+\titlerunning{A Proximal Modified Quasi-Newton Method}        % if too long for running head
+
+\author{Youssef Diouane \and
+        Mohamed Laghdaf \and
+        Dominique Orban
 }
 
-%\titlerunning{Short form of title}        % if too long for running head
+\authorrunning{Diouane, Laghdaf, Orban} % if too long for running head
 
-\author{First Author         \and
-        Second Author %etc.
-}
-
-%\authorrunning{Short form of author list} % if too long for running head
-
-\institute{F. Author \at
-              first address \\
-              Tel.: +123-45-678910\\
-              Fax: +123-45-678910\\
-              \email{fauthor@example.com}           %  \\
-%             \emph{Present address:} of F. Author  %  if needed
-           \and
-           S. Author \at
-              second address
+\institute{%
+  Y. Diouane \at
+  Department of Mathematics and Industrial Engineering, Polytechnique Montr\'eal.
+  \email{youssef.diouane@polymtl.ca}
+  \and
+  M. Laghdaf \at
+  École Nationale Supérieure des Techniques Avancées, Paris
+  \email{mohamed.habiboullah@ens-paris-saclay.fr}
+  \and
+  D. Orban \at
+  GERAD and Department of Mathematics and Industrial Engineering, Polytechnique Montr\'eal.
+  \email{dominique.orban@gerad.ca}
 }
 
 \date{Received: date / Accepted: date}
@@ -65,9 +89,24 @@
 \thispagestyle{mytitlepage}
 
 \begin{abstract}
-  Insert your abstract here. Include keywords, PACS and mathematical subject classification numbers as needed.
-  \smarttodo{write abstract}
-  \keywords{First keyword \and Second keyword \and More}
+  We develop method RN2, a modified quasi-Newton method for minimizing the sum of a smooth \(f\) with Lipschitz gradient and lower semi-continuous prox-bounded \(h\).
+  Both \(f\) and \(h\) may be nonconvex and may be bound constrained.
+  At each iteration, our method computes a step by minimizing the sum of a convex quadratic quasi-Newton model of \(f\), a model of \(h\), and an adaptive quadratic regularization term. 
+  A step may be computed by way of methods R2 \citep{aravkin-baraldi-orban-2022} or TRDH \citep{leconte-orban-2023}.
+  In variant RN2-DH, the model of \(f\) is diagonal, which allows us to compute a step without resort to a subproblem solver for a few separable \(h\) that are relevant in applications.
+  RN2-DH can also be used as subproblem solver inside RN2.
+  We establish global convergence of a first-order stationarity measure to zero and a worst-case evaluation complexity bound of \(O(\epsilon^{-2})\) to bring said measure below \(\epsilon \in (0, \, 1)\).
+  We describe our Julia implementation and report numerical experience on inverse problems, and a minimum-rank matrix completion problem.
+  \smarttodo{finish abstract}
+  \keywords{%
+    Nonsmooth optimization \and
+    Nonconvex optimization \and
+    Regularized optimization \and
+    Composite optimization \and
+    Modified quasi-Newton method \and
+    Proximal quasi-Newton method \and
+    Proximal gradient method
+  }
 % \PACS{PACS code1 \and PACS code2 \and more}
 % \subclass{MSC code1 \and MSC code2 \and more}
 \end{abstract}
@@ -79,7 +118,321 @@
 %\textbf{Mots cl\'es :}
 
 \section{Introduction}%
-\label{intro}
+\label{sec:introduction}
+
+We consider problems of the form
+\begin{equation}%
+  \label{eq:nlp}
+  \minimize{x \in \R^n} \ f(x) + h(x) \quad \st \ \ell \leq x \leq u,
+\end{equation}
+where \(\ell \in (\R \cup \{-\infty\})^n\), \(u \in (\R \cup \{+\infty\})^n\), \(f: \R^n \to \R\) is differentiable over the box \([\ell, u]\), \(h: \R^n \to \R \cup \{+\infty\}\) is lower semi-continuous, and inequalities are understood componentwise.
+
+Our motivation for developing a modified Newton variant of the trust-region algorithms of \citet{aravkin-baraldi-orban-2022} and \citet{leconte-orban-2023} is that the proximal operators used in the subproblems should be easier to derive as they do not need to account for an extra trust region indicator.
+Of course, in the presence of bound constraints, they have to account for a box indicator.
+
+We also develop a variant of the complexity result of \citet{leconte-orban-2023} for the case where the Hessian approximation of \(f\) is not uniformly bounded.
+
+\subsection*{Contributions and Related Research}
+
+\begin{itemize}
+  \item \citet{aravkin-baraldi-orban-2022}: trust-region method;
+  \item \citet{kanzow-lechner-2021}: nonsmooth term must be convex;
+  \item \citet{leconte-orban-2023}: model with diagonal Hessian, trust-region method;
+  \item \citet{aravkin-baraldi-orban-2022b}: nonlinear least-squares;
+\end{itemize}
+
+\subsection*{Notation}
+
+\section{Background}%
+\label{sec:background}
+
+\begin{itemize}
+  \item Fréchet and limiting subdifferentials;
+  \item proximal operator;
+  \item constraint qualification (because of the bounds);
+  \item first-order stationarity;
+\end{itemize}
+
+\section{Models}%
+\label{sec:models}
+
+For \(\nu > 0\), \(\sigma \geq 0\), \(x \in [\ell, u]\), and \(B = B^T \in \R^{n \times n}\) with \(B \succeq 0\), let
+\begin{subequations}
+  \begin{align}
+    \varphi_1(s; x, \nu^{-1}) & := f(x) + \nabla f(x)^T s + \tfrac{1}{2} \nu^{-1} \|s\|^2 \\
+    \varphi(s; x, \sigma)     & := f(x) + \nabla f(x)^T s + \tfrac{1}{2} s^T (B + \sigma I) s \\
+    \psi(s; x)                & \phantom{:}\approx h(x + s) \\
+    m_1(s; x, \nu^{-1})       & := \varphi_1(s; x, \nu^{-1}) + \psi(s; x) + \chi(s \mid [\ell - x, u - x]) \\
+    m(s; x, \sigma)           & := \varphi(s; x, \sigma) + \psi(s; x) + \chi(s \mid [\ell - x, u - x]).
+  \end{align}
+\end{subequations}
+
+\begin{modelassumption}%
+  \label{asm:psi}
+  For any \(x \in \R^n\), \(\psi(\cdot; x)\) is proper, lsc and prox-bounded with threshold \(\lambda_x \in \R_+ \cup \{+\infty\}\).
+  In addition, \(\psi(0; x) = h(x)\), and \(\partial \psi(0; x) = \partial h(x)\).
+\end{modelassumption}
+
+Define also
+\begin{subequations}
+  \begin{align}
+    p_1(x; \nu^{-1})   & := \min_s \ m_1(s; x, \nu^{-1}) \leq m_1(0; x, \nu^{-1}) = f(x) + h(x) \\
+    P_1(x; \nu^{-1})   & := \argmin{s} \ m_1(s; x, \nu^{-1}) \\
+    \xi_1(s; \nu^{-1}) & := f(x) + h(x) - p_1(x; \nu^{-1}) \geq 0 \label{eq:def-xi1}.
+  \end{align}
+\end{subequations}
+
+\section{Algorithm}%
+\label{sec:algorithm}
+
+\begin{algorithm}[ht]
+  \caption[caption]{%
+    Nonsmooth regularized modified Newton method.%
+    \label{alg:RN2}
+  }
+  \begin{algorithmic}[1]
+    \State Choose constants \(0 < \eta_1 \leq \eta_2 < 1\) and \(0 < \gamma_3 \leq 1 < \gamma_1 \leq \gamma_2\).
+    \State Choose \(x_0 \in \R^n\) where \(h\) is finite, \(\sigma_0 > 0\), compute \(f(x_0)\) and \(h(x_0)\).
+    \For{\(k = 0, 1, \dots\)}
+      \State\label{alg:RN2:Bk}%
+      Choose \(B_k = B_k^T \in \R^{n \times n}\) with \(B_k \succeq 0\).
+      \State\label{alg:RN2:step-nuk}%
+      Choose a steplength \(\nu_k < 1 / (\|B_k\| + \sigma_k)\).
+      \State Compute \(s_{k,1} \in \argmin{s} \ m_1(s; x_k, \nu_k)\) and \(\xi_1(x_k, \nu_k)\) as defined in~\eqref{eq:def-xi1}.
+      \State\label{alg:RN2:step-computation}%
+      Compute an approximate minimizer \(s_k\) of \(m(s; x_k, \sigma_k)\).
+      \State\label{alg:RN2:step-rhok}%
+      Compute the ratio
+      \[
+      \rho_k :=
+      \frac{
+        f(x_k) + h(x_k) - (f(x_k + s_k) + h(x_k + s_k))
+      }{
+        \varphi(0; x_k) + \psi(0; x_k) - (\varphi(s_k; x_k) + \psi(s_k; x_k))
+      }.
+      \]
+      \State\label{alg:RN2:step-accept}%
+      If \(\rho_k \geq \eta_1\), set \(x_{k+1} = x_k + s_k\). Otherwise, set \(x_{k+1} = x_k\).
+      \State\label{alg:RN2:step-update}%
+      Update the regularization parameter according to
+      \[
+        \sigma_{k+1} \in
+        \begin{cases}
+          [\gamma_3 \sigma_k, \, \sigma_k] & \text{ if } \rho_k \geq \eta_2,
+          \\ [\sigma_k, \, \gamma_1 \sigma_k] & \text{ if } \eta_1 \leq \rho_k < \eta_2,
+          \\ [\gamma_1 \sigma_k, \, \gamma_2 \sigma_k] & \text{ if } \rho_k < \eta_1.
+        \end{cases}
+      \]
+    \EndFor
+  \end{algorithmic}
+\end{algorithm}
+
+Unlike \citep[Algorithm~\(3.1\)]{aravkin-baraldi-orban-2022}, \Cref{alg:RN2} requires \(B_k \succeq 0\), and thus may fail to model negative curvature that may be naturally present in \(f\).
+However, proximal operators should be easier to derive than in the case of \citep[Algorithm~\(3.1\)]{aravkin-baraldi-orban-2022} as they do not involve an extra indicator for the trust region.
+
+\begin{problemassumption}%
+  \label{asm:g-lipschitz}
+  \(f\) is continuously differentiable on \(\{x \in [\ell, u] \mid (f+h)(x) \leq (f+h)(x_0)\}\) and \(h\) is proper and lower semi-continuous.
+\end{problemassumption}
+
+\begin{remark}
+  We do not require \(\nabla f\) to be Lipschitz continuous.
+\end{remark}
+
+\section{Convergence Properties and Evaluation Complexity}%
+\label{sec:convergence}
+
+The convergence properties of \Cref{alg:RN2} mirror those of \citep[Algorithm~\(4.1\)]{aravkin-baraldi-orban-2022b} and the proofs are identical.
+We omit them below and refer the interested reader to \citep{aravkin-baraldi-orban-2022b} for complete details.
+
+\begin{modelassumption}%
+  \label{asm:model-adequacy}
+  There is \(\kappa_{\textup{m}} > 0\) such that for all \(x\) and \(s \in \R^n\), \(|(f + h)(x + s) - (\varphi +
+\psi)(s; x)| \leq \kappa_{\textup{m}} \|s\|^2\).
+\end{modelassumption}
+
+We make the following additional assumption and say that \(\{\psi(\cdot; x_k)\}\) is \emph{uniformly prox-bounded}.
+
+\begin{modelassumption}%
+  \label{asm:unif-prox-bounded}
+  There exists \(\lambda > 0\) such that \(\lambda_{x_k} \geq \lambda\) for all \(k \in \N\).
+\end{modelassumption}
+
+\Cref{asm:unif-prox-bounded} is satisfied if \(h\) itself is prox-bounded, and we select \(\psi(s; x_k) := h(x_k + s)\) at each iteration.
+
+\begin{theorem}%
+  \label{thm:sigmasucc}
+  Let \Cref{asm:psi,asm:model-adequacy,asm:unif-prox-bounded} be satisfied, and let
+  \begin{equation}
+    \label{eq:def-sigmasucc}
+    \sigma_{\textup{succ}} :=
+    \max(2 \kappa_{\textup{m}} / (1 - \eta_2), \, \lambda^{-1})
+     > 0.
+  \end{equation}
+  If \(x_k\) is not first-order stationary and
+  \(
+    \sigma_k \geq \sigma_{\textup{succ}}
+  \),
+  then iteration \(k\) is very successful and
+  \(
+    \sigma_{k+1} \leq \sigma_k
+  \).
+\end{theorem}
+
+By \Cref{thm:sigmasucc}, there exists \(\sigma_{\max} > 0\) such that
+\begin{equation}%
+  \label{eq:sigmamax}
+  \sigma_k \leq
+  \sigma_{\max} := \min(\sigma_0, \gamma_2 \sigma_{\textup{succ}}) > 0
+  \quad \text{for all } k \in \N.
+\end{equation}
+
+\begin{theorem}%
+  \label{thm:lm-finite}
+  Let \Cref{asm:g-lipschitz,asm:psi,asm:model-adequacy} be satisfied.
+  If \Cref{alg:RN2} only generates finitely many successful iterations, then \(x_k = x^*\) for all sufficiently large
+\(k\) and \(x^*\) is first-order critical.
+\end{theorem}
+
+Let \(0 < \theta < 1\).
+In Step~\ref{alg:RN2:step-nuk} of \Cref{alg:RN2}, we set
+\begin{equation}%
+  \label{eq:nuk}
+  \nu_k := \theta / (\|B_k\| + \sigma_k).
+\end{equation}
+
+\subsection{Bounded Hessian Approximations}%
+\label{sec:B-bounded}
+
+\begin{modelassumption}%
+  \label{asm:B-bounded}
+  There exists \(\kappa_B > 0\) such that \(\|B_k\| \leq \kappa_B\) for all \(k \in \N\).
+\end{modelassumption}
+
+\Cref{asm:B-bounded} and~\eqref{eq:sigmamax} yield
+\begin{equation}%
+  \label{eq:numin}
+  \nu_k \geq \theta / (\kappa_B + \sigma_{\max}) := \nu_{\min} > 0
+  \quad \text{for all } k \in \N.
+\end{equation}
+Therefore, \(\nu_k^{-1} \leq \nu_{\min}^{-1}\) for all \(k \geq 0\), and \citep[Theorem~\(1.25\)]{rtrw} implies
+\begin{equation}%
+  \label{eq:ximin-nu}
+  \xi_1(x_k, \nu_k^{-1}) \geq \xi_1(x_k, \nu_{\min}^{-1})
+  \quad \text{for all } k \in \N.
+\end{equation}
+
+For \(\epsilon \in (0, \, 1)\), we seek \(k(\epsilon) \in \N\) such that
+\begin{equation}
+  \label{eq:RN2-stop}
+  \xi_1{(x_k, \nu_{\min}^{-1})}^{\frac12} > \epsilon \quad \text{for all } k < k(\epsilon)
+  \quad \text{and} \quad
+  \xi_1{(x_{k(\epsilon)}, \nu_{\min}^{-1})}^{\frac12} \leq \epsilon.
+\end{equation}
+Define the sets
+\begin{subequations}%
+  \label{eq:S-U-sets}
+  \begin{align}
+       \mathcal{S} & := \{ k \in \N \mid \rho_k \geq \eta_1 \},
+    \\ \mathcal{S}(\epsilon) & := \{ k \in \mathcal{S} \mid k < k(\epsilon) \},
+    \\ \mathcal{U}(\epsilon) & := \{k \in \N \mid k \not \in \mathcal{S} \text{ and } k < k(\epsilon) \}.
+  \end{align}
+\end{subequations}
+
+At this point, it is necessary to assume that the step computed at step~\ref{alg:RN2:step-computation} of \Cref{alg:RN2} is related to \(\xi_1(x_k, \sigma_k)\).
+That is the subject of the next assumption.
+
+\begin{stepassumption}%
+  \label{asm:step-computation}
+  There exists \(\kappa_{\textup{mdc}} \in (0, \, 1)\) such that \(s_k\) computed at stage~\ref{alg:RN2:step-computation} of \Cref{alg:RN2} satisfies
+  \begin{equation}%
+    \label{eq:sufficient-decrease}
+    \varphi(0; x_k) + \psi(0; x_k) - (\varphi(s_k; x_k) + \psi(s_k; x_k)) \geq
+    \kappa_{\textup{mdc}} \xi_1(x_k, \nu_k^{-1}).
+  \end{equation}
+\end{stepassumption}
+
+\begin{theorem}%
+  \label{thm:lm-complexity-bound}
+  Let \Cref{asm:g-lipschitz,asm:psi,asm:model-adequacy} be satisfied and \(s_k\) be computed according to \Cref{asm:step-computation}, where \(\nu_k\) is chosen according to~\eqref{eq:nuk}.
+  Assume there are infinitely many successful iterations and that \(f(x) + h(x) \geq {(f + h)}_{\textup{low}}\) for all \(x \in \R^n\).
+  Then,
+  \begin{equation}
+    \label{eq:lm-bound-Seps}
+    |\mathcal{S}(\epsilon)| \leq
+    \frac{(f + h)(x_0) - (f + h)_{\textup{low}}}{\eta_1 \kappa_{\textup{mdc}} \epsilon^2} =
+    O(\epsilon^{-2}),
+  \end{equation}
+  and
+  \begin{equation}
+    \label{eq:lm-bound-Ueps}
+    |\mathcal{U}(\epsilon)| \leq
+    \frac{\log(\sigma_{\max} / \sigma_0)}{\log(\gamma_1)} + |\mathcal{S}(\epsilon)| \frac{|\log(\gamma_3)|}{\log(\gamma_1)}
+    =
+    O(\epsilon^{-2}).
+  \end{equation}
+\end{theorem}
+
+\subsection{Possibly Unbounded Hessian Approximations}%
+\label{sec:B-unbounded}
+
+
+\section{Special Case: Diagonal Hessian Approximations}%
+\label{sec:dh}
+
+We now consider the case where \(B_k\) may not be bounded and formulate a variant of \citep[Lemma~\(1\)]{leconte-orban-2023}.
+
+\section{Implementation and Numerical Results}%
+\label{sec:numerical}
+
+We compare several variants:
+\begin{itemize}
+  \item R2
+  \item TR-R2
+  \item TRDH (maybe? Include the updates of \citet{zhu-nazareth-wolkowicz-1999})
+  \item TR-TRDH (maybe? Include the updates of \citet{zhu-nazareth-wolkowicz-1999})
+  \item RN2-R2
+  \item RN2DH (several variants: spectral, safeguarded PSB, safeguarded Andrei, those of \citet{zhu-nazareth-wolkowicz-1999})
+  \item RN2-RN2DH (same variants).
+\end{itemize}
+
+\section{Discussion}%
+\label{sec:discussion}
+
+
+%\begin{acknowledgements}
+%If you'd like to thank anyone, place your comments here
+%and remove the percent signs.
+%\end{acknowledgements}
+
+%% References
+%% We use Natbib, which is accepted by SIAM and Springer journals
+%% see the cheat sheet: http://merkel.texture.rocks/Latex/natbib.php
+
+% Do not use \cite{}. Only use the Natbib commands.
+% \citet{jon90}                   -->     Jones et al. (1990)
+% \citet[chap. 2]{jon90}          -->     Jones et al. (1990, chap. 2)
+% \citep{jon90}                   -->     (Jones et al., 1990)
+% \citep[chap. 2]{jon90}          -->     (Jones et al., 1990, chap. 2)
+% \citep[see][]{jon90}            -->     (see Jones et al., 1990)
+% \citep[see][chap. 2]{jon90}     -->     (see Jones et al., 1990, chap. 2)
+% \citet*{jon90}                  -->     Jones, Baker, and Williams (1990)
+% \citep*{jon90}                  -->     (Jones, Baker, and Williams, 1990)
+
+%% References with BibTeX database:
+% - each reference should have a DOI
+% - use the strings provided for the journal name
+
+\small
+\bibliographystyle{abbrvnat}
+\bibliography{abbrv,\jobname}
+\normalsize
+
+\appendix
+\clearpage
+
+\section{Instructions}%
+\label{sec:instructions}
 
 Your \LaTeX\ source will be managed by Git.
 Please write \emph{exactly one sentence per line}, as that will make it much easier to visualize diffs when you make changes.
@@ -93,19 +446,19 @@ That means:
   \item use spaces between commands.
 \end{enumerate}
 
-\section{Section title}%
-\label{sec:1}
+\section{Another Section}%
+\label{sec:more-stuff}
 
 We use Natbib, which means that we do not use the \verb|\cite{}| command.
 Instead, we only use Natbib commands, such as \verb|\citep{}| and \verb|\citet{}|.
 Please refer to the Natbib cheat sheet at \http{merkel.texture.rocks/Latex/natbib.php}.
 
-\verb|\citep{}| produces \citep{wright-orban-2002} while \verb|\citet{}| produces \citet{wright-orban-2002}.
+\verb|\citep{}| produces \citep{aravkin-baraldi-orban-2022} while \verb|\citet{}| produces \citet{aravkin-baraldi-orban-2022}.
 
 \subsection{Subsection title}%
 \label{sec:2}
 
-Don't forget to give each section and subsection a unique label (see \cref{sec:1}).
+Don't forget to give each section and subsection a unique label (see \cref{sec:more-stuff}).
 
 \begin{lemma}%
   \label{lem:important}
@@ -168,7 +521,7 @@ Instead, use \verb|\eqref{}| preceded by an unbreakable space: refer to~\eqref{e
 % \end{figure*}
 %
 % For tables use
-\begin{table}
+\begin{table}[ht]
   % table caption is above the table
   \caption{Please write your table caption here}
   \label{tab:1}       % Give a unique label
@@ -182,32 +535,6 @@ Instead, use \verb|\eqref{}| preceded by an unbreakable space: refer to~\eqref{e
     \noalign{\smallskip}\hline
   \end{tabular}
 \end{table}
-
-%\begin{acknowledgements}
-%If you'd like to thank anyone, place your comments here
-%and remove the percent signs.
-%\end{acknowledgements}
-
-%% References
-%% We use Natbib, which is accepted by SIAM and Springer journals
-%% see the cheat sheet: http://merkel.texture.rocks/Latex/natbib.php
-
-% Do not use \cite{}. Only use the Natbib commands.
-% \citet{jon90}                   -->     Jones et al. (1990)
-% \citet[chap. 2]{jon90}          -->     Jones et al. (1990, chap. 2)
-% \citep{jon90}                   -->     (Jones et al., 1990)
-% \citep[chap. 2]{jon90}          -->     (Jones et al., 1990, chap. 2)
-% \citep[see][]{jon90}            -->     (see Jones et al., 1990)
-% \citep[see][chap. 2]{jon90}     -->     (see Jones et al., 1990, chap. 2)
-% \citet*{jon90}                  -->     Jones, Baker, and Williams (1990)
-% \citep*{jon90}                  -->     (Jones, Baker, and Williams, 1990)
-
-%% References with BibTeX database:
-% - each reference should have a DOI
-% - use the strings provided for the journal name
-
-\bibliographystyle{abbrvnat}
-\bibliography{abbrv,\jobname}
 
 \newpage
 

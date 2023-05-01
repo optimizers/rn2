@@ -1,8 +1,66 @@
-@Article{wright-orban-2002,
- author = {S. J. Wright and D. Orban},
- title = {Local Convergence of the {N}ewton/Log-Barrier Method
-          for Degenerate Problems},
- doi = {10.1287/moor.27.3.585.312},
- journal = mor,
- year = {2002}, volume = {27}, number = {3}, pages = {585--613}
+@article{aravkin-baraldi-orban-2022,
+  author = {Aravkin, Aleksandr Y. and Baraldi, Robert and Orban, Dominique},
+  title = {A Proximal Quasi-{N}ewton Trust-Region Method for Nonsmooth Regularized Optimization},
+  journal = siopt,
+  volume = {32},
+  number = {2},
+  pages = {900--929},
+  year = {2022},
+  doi = {10.1137/21M1409536},
+  abstract = { We develop a trust-region method for minimizing the sum of a smooth term (f) and a nonsmooth term (h), both of which can be nonconvex. Each iteration of our method minimizes a possibly nonconvex model of (f + h) in a trust region. The model coincides with (f + h) in value and subdifferential at the center. We establish global convergence to a first-order stationary point when (f) satisfies a smoothness condition that holds, in particular, when it has a Lipschitz-continuous gradient, and (h) is proper and lower semicontinuous. The model of (h) is required to be proper, lower semi-continuous and prox-bounded. Under these weak assumptions, we establish a worst-case (O(1/\epsilon^2)) iteration complexity bound that matches the best known complexity bound of standard trust-region methods for smooth optimization. We detail a special instance, named TR-PG, in which we use a limited-memory quasi-Newton model of (f) and compute a step with the proximal gradient method, resulting in a practical proximal quasi-Newton method. We establish similar convergence properties and complexity bound for a quadratic regularization variant, named R2, and provide an interpretation as a proximal gradient method with adaptive step size for nonconvex problems. R2 may also be used to compute steps inside the trust-region method, resulting in an implementation named TR-R2. We describe our Julia implementations and report numerical results on inverse problems from sparse optimization and signal processing. Both TR-PG and TR-R2 exhibit promising performance and compare favorably with two linesearch proximal quasi-Newton methods based on convex models. },
 }
+
+@techreport{aravkin-baraldi-orban-2022b,
+  author = {Aravkin, A. and Baraldi, R. and Orban, D.},
+  title = {A {L}evenberg-{M}arquardt Method for Nonsmooth Regularized Least Squares},
+  institution = {GERAD},
+  year = {2023},
+  type = {Cahier du GERAD},
+  number = {G-2023-58},
+  address = {Montr\'eal, QC, Canada},
+  doi = {10.13140/RG.2.2.28438.01604}
+}
+
+@techreport{leconte-orban-2023,
+  author = {Leconte, G. and Orban, D.},
+  title = {The Indefinite Proximal Gradient Method},
+  institution = {GERAD},
+  year = {2023},
+  type = {Cahier du GERAD},
+  number = {G-2023-xx},
+  address = {Montr\'eal, QC, Canada},
+}
+
+@article{kanzow-lechner-2021,
+  author = {Kanzow, Christian and Lechner, Theresa},
+  title = {Globalized inexact proximal {N}ewton-type methods for nonconvex composite functions},
+  journal = coap,
+  volume = {78},
+  number = {2},
+  pages = {377--410},
+  year = {2021},
+  doi = {10.1007/s10589-020-00243-6},
+  abstract = {Optimization problems with composite functions consist of an objective function which is the sum of a smooth and a (convex) nonsmooth term. This particular structure is exploited by the class of proximal gradient methods and some of their generalizations like proximal Newton and quasi-Newton methods. The current literature on these classes of methods almost exclusively considers the case where also the smooth term is convex. Here we present a globalized proximal Newton-type method which allows the smooth term to be nonconvex. The method is shown to have nice global and local convergence properties, and some numerical results indicate that this method is very promising also from a practical point of view.},
+}
+
+@book{rtrw,
+  Author = {Rockafellar, R. T. and Wets, R. J. B.},
+  Publisher = springer,
+  Title = {Variational Analysis},
+  Volume = {317},
+  Year = {1998},
+  doi = {10.1007/978-3-642-02431-3},
+}
+
+@article{zhu-nazareth-wolkowicz-1999,
+  author = {Zhu, M. and Nazareth, J. L. and Wolkowicz, H.},
+  title = {The Quasi-{C}auchy Relation and Diagonal Updating},
+  journal = siopt,
+  volume = {9},
+  number = {4},
+  pages = {1192--1204},
+  year = {1999},
+  doi = {10.1137/S1052623498331793},
+  abstract = { The quasi-Cauchy (QC) relation is the weak quasi-Newton relation of Dennis and Wolkowicz [SIAM J. Numer. Anal., 30 (1993), pp. 1291--1314] with the added restriction that full matrices are replaced by diagonal matrices. This relation is justified and explored and, in particular, two basic variational techniques for updating diagonal matrices that satisfy it are formulated.For purposes of illustration, a numerical experiment is described where a diagonal updated matrix with hereditary positive definiteness is used to precondition Cauchy's steepest-descent direction. The resulting QC algorithm is shown to be significantly accelerated.In the concluding section, the following topics are briefly discussed: additional variational principles, use of diagonal updates within other optimization algorithms together with some further numerical experience (summarized in an appendix), and an interesting connection between QC-diagonal updating and trust-region techniques. },
+}
+
