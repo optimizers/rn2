@@ -58,24 +58,25 @@
 
 \titlerunning{A Proximal Modified Quasi-Newton Method}        % if too long for running head
 
-\author{Youssef Diouane \and
-        Mohamed Laghdaf \and
-        Dominique Orban
+\author{%
+  Youssef Diouane \and
+  Mohamed Laghdaf \and
+  Dominique Orban
 }
 
 \authorrunning{Diouane, Laghdaf, Orban} % if too long for running head
 
 \institute{%
-  Y. Diouane \at
-  Department of Mathematics and Industrial Engineering, Polytechnique Montr\'eal.
+  Y.~Diouane \at
+  Mathematics and Industrial Engineering, Polytechnique Montr\'eal.\\
   \email{youssef.diouane@polymtl.ca}
   \and
-  M. Laghdaf \at
-  École Nationale Supérieure des Techniques Avancées, Paris
+  M.~Laghdaf \at
+  École Nationale Supérieure des Techniques Avancées, Paris.\\
   \email{mohamed.habiboullah@ens-paris-saclay.fr}
   \and
-  D. Orban \at
-  GERAD and Department of Mathematics and Industrial Engineering, Polytechnique Montr\'eal.
+  D.~Orban \at
+  GERAD and Mathematics and Industrial Engineering, Polytechnique Montr\'eal.\\
   \email{dominique.orban@gerad.ca}
 }
 
@@ -178,7 +179,7 @@ Define also
   \begin{align}
     p_1(x; \nu^{-1})   & := \min_s \ m_1(s; x, \nu^{-1}) \leq m_1(0; x, \nu^{-1}) = f(x) + h(x) \\
     P_1(x; \nu^{-1})   & := \argmin{s} \ m_1(s; x, \nu^{-1}) \\
-    \xi_1(s; \nu^{-1}) & := f(x) + h(x) - p_1(x; \nu^{-1}) \geq 0 \label{eq:def-xi1}.
+    \xi_1(s; \nu^{-1}) & := f(x) + h(x) - p_1(x; \nu^{-1}) \geq 0. \label{eq:def-xi1}
   \end{align}
 \end{subequations}
 
@@ -247,8 +248,8 @@ We omit them below and refer the interested reader to \citep{aravkin-baraldi-orb
 
 \begin{modelassumption}%
   \label{asm:model-adequacy}
-  There is \(\kappa_{\textup{m}} > 0\) such that for all \(x\) and \(s \in \R^n\), \(|(f + h)(x + s) - (\varphi +
-\psi)(s; x)| \leq \kappa_{\textup{m}} \|s\|^2\).
+  There is \(\kappa_{\textup{m}} > 0\) such that for all \(k \in \N\), \(|(f + h)(x_k + s_k) - (\varphi +
+\psi)(s_k; x_k)| \leq \kappa_{\textup{m}} \|s_k\|^2\).
 \end{modelassumption}
 
 We make the following additional assumption and say that \(\{\psi(\cdot; x_k)\}\) is \emph{uniformly prox-bounded}.
