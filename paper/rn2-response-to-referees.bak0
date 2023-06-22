@@ -20,7 +20,7 @@
   backgroundcolor=lightgray,
   linecolor=orange,
   textsize=scriptsize]{todonotes}
-
+  
 \makeatletter
 \@mparswitchfalse  % Place todo notes in wide margin.
 \def\listtodoname{Todo List}
@@ -41,26 +41,20 @@
 
 \begin{document}
 
-\begin{center}
-  \Large
-  Title line 1
-  \\ Title line 2
-  \\[6pt] \large Author1, Author2
-  \\[6pt] \today
-  \\[12pt]\Large \bf Response to reviewers
+\begin{center} \Large
+   Title line 1
+\\ Title line 2
+\\[6pt] \large Author1, Author2
+\\[6pt] \today
+\\[12pt]\Large \bf Response to reviewers
 \end{center}
 
-\noindent We thank the reviewers for their careful reading of our manuscript and their insightful and constructive comments.
-We followed the suggestions in almost every instance.
-Our responses are summarized below.
+\noindent We thank the reviewers for their careful reading of our manuscript and their insightful and constructive comments. We followed the suggestions in almost every instance. Our responses are summarized below.
 
 \section*{Reviewer 1 comments}
 
-\begin{enumerate}[label={\color{black}
-        R1.
-        \arabic*}]
-  \item\label{R1:comment1}
-  Referee comment.
+\begin{enumerate}[label={\color{black}R1.\arabic*}]
+  \item\label{R1:comment1} Referee comment.
 
   \begin{answer}
     Our answer.
@@ -68,22 +62,19 @@ Our responses are summarized below.
 
   \item Referee comment.
 
-        \begin{answer}
-          Our answer can refer to~\ref{R1:comment1}.
-        \end{answer}
-
+  \begin{answer}
+    Our answer can refer to~\ref{R1:comment1}.
+  \end{answer}
+  
 \end{enumerate}
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 \section*{Reviewer 2 comments}
 
-\begin{enumerate}[label={\color{black}
-        R2.
-        \arabic*}]
+\begin{enumerate}[label={\color{black}R2.\arabic*}]
 
-  \item\label{R2:comment1}
-  Referee comment.
+  \item\label{R2:comment1} Referee comment.
 
   \begin{answer}
     Our answer.
@@ -91,9 +82,9 @@ Our responses are summarized below.
 
   \item Referee comment.
 
-        \begin{answer}
-          Our answer can refer to~\ref{R2:comment1}.
-        \end{answer}
+  \begin{answer}
+    Our answer can refer to~\ref{R2:comment1}.
+  \end{answer}
 
 \end{enumerate}
 
@@ -101,9 +92,7 @@ Our responses are summarized below.
 
 \section*{Other changes}
 
-\begin{enumerate}[label={\color{black}
-        O.
-        \arabic*}]
+\begin{enumerate}[label={\color{black}O.\arabic*}]
 
   \item Description of other change.
 
